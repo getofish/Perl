@@ -1,0 +1,35 @@
+#!/usr/bin/perl
+
+use JSON::Parse 'parse_json';
+use Getopt::Std;
+
+our($opt_s, $opt_d, $opt_s);
+getopts('sdf:');
+
+# open the file
+open(IN,"< $opt_f") || die "unable to find file: $opt_f";
+seek(IN,0,SEEK_SET);
+my $string = join('',<IN>);
+close(IN);
+
+my $doc;
+$doc = parse_json($string);
+foreach my $hr_entry (@{$doc})
+{
+
+	my $hr_report = $hr_entry->{assessment}{report};
+	my $ar_findings = $hr_report->{findings};
+
+	foreach my $finding (@{$ar_findings}) {
+		my @line = ();
+		push(@line,$hr_entry->{title});
+		push(@line,$finding->{cvss});
+		push(@line,$finding->{impactType});
+		push(@line,$finding->{checkId});
+		print join(',',@line);
+		print "\n";
+	}
+}
+
+####Run with the following inside your perl shell
+####perl jsonutil.pl -f 45d74845-9dd9-445e-b28b-7d96c5db13d4.json
