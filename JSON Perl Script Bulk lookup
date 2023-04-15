@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+
+use JSON::Parse 'parse_json';
+
+if ($#ARGV<0)
+{
+  print "Usage:  perl jsonutil.pl <filelist>\n";
+  exit;
+}
+
+# loop through args
+foreach $file (@ARGV)
+{
+
+	# open the file
+	open(IN,"< $file") || die "unable to find file: $file";
+	seek(IN,0,SEEK_SET);
+	my $string = join('',<IN>);
+	close(IN);
+
+	# Parse the doc for the fields needed
+	my $doc;
+	$doc = parse_json($string);
+	foreach my $hr_entry (@{$doc})
+	{
+
+		my $hr_report = $hr_entry->{assessment}{report};
+		my $ar_findings = $hr_report->{findings};
+
+		foreach my $finding (@{$ar_findings}) {
+			my @line = ();
+			push(@line,$hr_entry->{title});
+			push(@line,$finding->{cvss});
+			push(@line,$finding->{impactType});
+			push(@line,$finding->{checkId});
+			print join(',',@line);
+			print "\n";
+		}
+	}
+}
